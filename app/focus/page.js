@@ -1,0 +1,103 @@
+"use client";
+
+import { useState } from "react";
+import Image from "next/image";
+import VolumeSlider from "../components/Slider";
+import SoundCard from "../components/SoundCard";
+import Timer from "../components/Timer";
+
+export default function Focus() {
+  const [muted, setMuted] = useState(false);
+  const [mainVolume, setMainVolume] = useState(50);
+
+  const [windVolume, setWindVolume] = useState(0);
+  const [fireVolume, setFireVolume] = useState(0);
+  const [rainVolume, setRainVolume] = useState(0);
+  const [waveVolume, setWaveVolume] = useState(0);
+
+  const effectiveVolume = (vol) => (muted ? 0 : vol);
+
+  const sounds = [
+    {
+      name: "Wind",
+      src: "/sounds/wind.mp3",
+      image: "/images/wind.png",
+      volume: windVolume,
+      setVolume: setWindVolume,
+    },
+    {
+      name: "Fire",
+      src: "/sounds/fire.mp3",
+      image: "/images/fireplace.png",
+      volume: fireVolume,
+      setVolume: setFireVolume,
+    },
+    {
+      name: "Rain",
+      src: "/sounds/rain.mp3",
+      image: "/images/rain.png",
+      volume: rainVolume,
+      setVolume: setRainVolume,
+    },
+    {
+      name: "Waves",
+      src: "/sounds/wave.mp3",
+      image: "/images/wave.png",
+      volume: waveVolume,
+      setVolume: setWaveVolume,
+    },
+  ];
+  const seconds = 600;
+  const timeStamp = new Date(Date.now() + seconds * 1000);
+
+  return (
+    <main className="flex flex-col items-center">
+      <div className="flex flex-col bg-black/25 flex-1 text-center p-5 max-w-6xl rounded-lg">
+        <div className="mb-6">
+          <h1 className="text-7xl tracking-widest font-bold">FocusFlow</h1>
+          <h2 className="mt-2 tracking-[.33em]">Personalized Productivity</h2>
+        </div>
+
+        <div className="flex flex-col items-center gap-4 mb-6">
+          <button
+            className="grid content-center bg-black/30 p-5 w-20 h-20 rounded-full"
+            onClick={() => setMuted(!muted)}
+          >
+            <Image
+              src={muted ? "/images/play.png" : "/images/pause.png"}
+              alt={muted ? "Muted" : "Playing"}
+              width={80}
+              height={80}
+              className={muted ? "pl-2" : "invert"}
+            />
+          </button>
+
+          <div className="w-48">
+            <VolumeSlider
+              value={mainVolume}
+              onChange={(e, val) => setMainVolume(val)}
+            />
+          </div>
+        </div>
+
+        <div className="flex p-3 justify-around gap-12">
+          {sounds.map((sound) => (
+            <SoundCard
+              key={sound.name}
+              name={sound.name}
+              src={sound.src}
+              image={sound.image}
+              volume={effectiveVolume(sound.volume)}
+              setVolume={sound.setVolume}
+              globalVolume={mainVolume}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="flex flex-col bg-black/25 flex-1 text-center p-5 max-w-6xl rounded-lg mt-8">
+        <Timer expiryTimestamp={timeStamp} />
+      </div>
+    </main>
+  );
+}
