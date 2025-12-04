@@ -1,20 +1,26 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
+import { useAudio } from "../context/AudioContext";
 import VolumeSlider from "../components/Slider";
 import SoundCard from "../components/SoundCard";
 import Timer from "../components/Timer";
 
 export default function Focus() {
-  const [muted, setMuted] = useState(false);
-  const [mainVolume, setMainVolume] = useState(50);
+  const {
+    muted,
+    mainVolume,
+    setMainVolume,
+    windVolume,
+    setWindVolume,
+    fireVolume,
+    setFireVolume,
+    rainVolume,
+    setRainVolume,
+    waveVolume,
+    setWaveVolume,
+  } = useAudio();
 
-  const [windVolume, setWindVolume] = useState(0);
-  const [fireVolume, setFireVolume] = useState(0);
-  const [rainVolume, setRainVolume] = useState(0);
-  const [waveVolume, setWaveVolume] = useState(0);
-
+  const { toggleMute } = useAudio();
   const effectiveVolume = (vol) => (muted ? 0 : vol);
 
   const sounds = [
@@ -47,12 +53,13 @@ export default function Focus() {
       setVolume: setWaveVolume,
     },
   ];
-  const seconds = 600;
+
+  const seconds = 3000;
   const timeStamp = new Date(Date.now() + seconds * 1000);
 
   return (
     <main className="flex flex-col items-center">
-      <div className="flex flex-col bg-black/25 flex-1 text-center p-5 max-w-6xl rounded-lg">
+      <div className="flex flex-col bg-[#3E3E3E] flex-1 text-center p-5 max-w-6xl rounded-lg">
         <div className="mb-6">
           <h1 className="text-7xl tracking-widest font-bold">FocusFlow</h1>
           <h2 className="mt-2 tracking-[.33em]">Personalized Productivity</h2>
@@ -60,15 +67,15 @@ export default function Focus() {
 
         <div className="flex flex-col items-center gap-4 mb-6">
           <button
-            className="grid content-center bg-black/30 p-5 w-20 h-20 rounded-full"
-            onClick={() => setMuted(!muted)}
+            className="grid content-center bg-[#8BA89E] p-5 w-20 h-20 rounded-full"
+            onClick={toggleMute}
           >
-            <Image
+            <img
               src={muted ? "/images/play.png" : "/images/pause.png"}
               alt={muted ? "Muted" : "Playing"}
               width={80}
               height={80}
-              className={muted ? "pl-2" : "invert"}
+              className={muted ? "pl-2" : ""}
             />
           </button>
 
@@ -95,7 +102,7 @@ export default function Focus() {
         </div>
       </div>
 
-      <div className="flex flex-col bg-black/25 flex-1 text-center p-5 max-w-6xl rounded-lg mt-8">
+      <div className="flex flex-col bg-[#3E3E3E] flex-1 text-center p-5 max-w-6xl rounded-lg mt-8">
         <Timer expiryTimestamp={timeStamp} />
       </div>
     </main>

@@ -1,18 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import VolumeSlider from "./Slider";
-import SoundPlayer from "./SoundPlayer";
 
-export default function SoundCard({
-  name,
-  src,
-  image,
-  volume,
-  setVolume,
-  globalVolume,
-}) {
+export default function SoundCard({ name, image, volume, setVolume }) {
   const [prevVolume, setPrevVolume] = useState(volume);
 
   const toggleMute = () => {
@@ -25,22 +16,27 @@ export default function SoundCard({
   };
 
   return (
-    <div className="bg-black/30 p-4 rounded-lg flex-1 flex flex-col items-center">
+    <div className="bg-[#353535] p-4 rounded-lg flex-1 flex flex-col items-center">
       <button onClick={toggleMute}>
-        <Image
+        <img
           src={image}
           alt={name}
           width={80}
           height={80}
-          className={`invert mb-6 mt-2 hover:cursor-pointer duration-900 ease-in-out ${
+          className={`mb-6 mt-2 hover:cursor-pointer duration-300 ease-in-out transition-opacity ${
             volume === 0 ? "opacity-30" : ""
           }`}
         />
       </button>
-      <p>{name}</p>
+      <p
+        className={`duration-300 ease-in-out transition-opacity ${
+          volume === 0 ? "opacity-30" : ""
+        }`}
+      >
+        {name}
+      </p>
       <div className="w-48">
         <VolumeSlider value={volume} onChange={(e, val) => setVolume(val)} />
-        <SoundPlayer src={src} volume={volume} globalVolume={globalVolume} />
       </div>
     </div>
   );

@@ -1,47 +1,63 @@
-import React, { useState } from "react";
-import { useTimer } from "react-timer-hook";
+"use client";
+
+import { useState, useEffect } from "react";
 import { Howl } from "howler";
+import { useAudio } from "../context/AudioContext";
 
 export default function DualTimer() {
+  const {
+    isTimerActive,
+    timeRemaining,
+    startTimer,
+    pauseTimer,
+    resumeTimer,
+    resetTimer,
+    setTimerCompleteCallback,
+  } = useAudio();
+
   const [firstTimer, setFirstTimer] = useState({
     hours: 0,
-    minutes: 45,
+    minutes: 50,
     seconds: 0,
   });
   const [secondTimer, setSecondTimer] = useState({
     hours: 0,
-    minutes: 8,
+    minutes: 10,
     seconds: 0,
   });
 
   const [active, setActive] = useState("first");
-
   const [editing, setEditing] = useState({ field: null });
   const [inputValue, setInputValue] = useState("");
 
-  const alarmSound = new Howl({ src: ["/sounds/alarm.mp3"], volume: 0.1 });
+  const alarmSound = new Howl({ src: ["/sounds/alarm.mp3"], volume: 0.5, html5: true });
 
-  const getDurationMs = ({ hours, minutes, seconds }) =>
-    (hours * 3600 + minutes * 60 + seconds) * 1000;
+  const getDurationSeconds = ({ hours, minutes, seconds }) =>
+    hours * 3600 + minutes * 60 + seconds;
 
-  const initialExpiry = new Date(Date.now() + getDurationMs(firstTimer));
+  // Calculate display minutes and seconds from remaining time
+  const displayMinutes = Math.floor(timeRemaining / 60);
+  const displaySeconds = timeRemaining % 60;
 
-  const { seconds, minutes, isRunning, pause, resume, restart } = useTimer({
-    expiryTimestamp: initialExpiry,
-    autoStart: false,
-    onExpire: () => {
+  // Handle timer completion
+  useEffect(() => {
+    setTimerCompleteCallback(() => {
       alarmSound.play();
+      
+      // Switch timers
       if (active === "first") {
-        const nextExpiry = new Date(Date.now() + getDurationMs(secondTimer));
         setActive("second");
-        restart(nextExpiry);
+        const duration = getDurationSeconds(secondTimer);
+        // Use startTimer directly with the new duration
+        startTimer(duration);
       } else {
-        const nextExpiry = new Date(Date.now() + getDurationMs(firstTimer));
         setActive("first");
-        restart(nextExpiry);
+        const duration = getDurationSeconds(firstTimer);
+        // Use startTimer directly with the new duration
+        startTimer(duration);
       }
-    },
-  });
+    });
+  }, [active, firstTimer, secondTimer]);
 
   const startEdit = (field, value) => {
     setEditing({ field });
@@ -56,10 +72,11 @@ export default function DualTimer() {
     } else {
       setSecondTimer({ ...secondTimer, [field]: num });
     }
+
     const duration = active === "first" ? firstTimer : secondTimer;
     const updated = { ...duration, [field]: num };
-    const newExpiry = new Date(Date.now() + getDurationMs(updated));
-    restart(newExpiry, false);
+    const newDuration = getDurationSeconds(updated);
+    resetTimer(newDuration);
 
     setEditing({ field: null });
   };
@@ -69,19 +86,39 @@ export default function DualTimer() {
     if (e.key === "Escape") setEditing({ field: null });
   };
 
+  const toggleTimer = () => {
+    if (isTimerActive) {
+      pauseTimer();
+    } else if (
+      timeRemaining ===
+      getDurationSeconds(active === "first" ? firstTimer : secondTimer)
+    ) {
+      // Starting fresh
+      const duration = getDurationSeconds(
+        active === "first" ? firstTimer : secondTimer
+      );
+      startTimer(duration);
+    } else {
+      // Resuming from pause
+      resumeTimer();
+    }
+  };
+
   const snooze = () => {
     if (active === "first") {
       setActive("second");
-      const nextExpiry = new Date(Date.now() + getDurationMs(secondTimer));
-      restart(nextExpiry, true);
+      const duration = getDurationSeconds(secondTimer);
+      resetTimer(duration);
+      startTimer(duration);
     }
   };
 
   const lockIn = () => {
     if (active === "second") {
       setActive("first");
-      const nextExpiry = new Date(Date.now() + getDurationMs(firstTimer));
-      restart(nextExpiry, true);
+      const duration = getDurationSeconds(firstTimer);
+      resetTimer(duration);
+      startTimer(duration);
     }
   };
 
@@ -95,7 +132,7 @@ export default function DualTimer() {
           onBlur={() => saveEdit(fieldName)}
           onKeyDown={(e) => handleKey(e, fieldName)}
           autoFocus
-          className="text-7xl font-sans text-center focus:outline-none w-26 h-24 text-white/60"
+          className="text-7xl font-sans text-center focus:outline-none w-26 h-24 text-white/60 bg-transparent"
         />
       );
     }
@@ -115,29 +152,30 @@ export default function DualTimer() {
         {active === "first" ? "Focus Timer" : "Relax Timer"}
       </h1>
       <div className="text-8xl flex justify-center tracking-widest gap-1 m-2">
-        {renderField("minutes", minutes)}:{renderField("seconds", seconds)}
+        {renderField("minutes", displayMinutes)}:
+        {renderField("seconds", displaySeconds)}
       </div>
       <div className="flex flex-col justify-center mt-5">
         <div className="flex justify-center mb-3">
           <button
-            onClick={resume}
+            onClick={toggleTimer}
             className={`pl-5 pr-5 p-1 rounded-l-md ${
-              !isRunning
-                ? "bg-white/40 border-l-2 border-white/30 hover:cursor-pointer"
-                : "bg-white/15"
+              !isTimerActive
+                ? "bg-[#8BA89E] border-l-2 border-white/30 hover:cursor-pointer"
+                : "bg-[#353535]"
             }`}
           >
             <img src="/images/play.png" className="h-6" />
           </button>
           <button
-            onClick={pause}
+            onClick={pauseTimer}
             className={`pl-5 pr-5 p-1 rounded-r-md ${
-              isRunning
-                ? "bg-white/40 border-r-2 border-white/30 hover:cursor-pointer"
-                : "bg-white/15"
+              isTimerActive
+                ? "bg-[#8BA89E] border-r-2 border-white/30 hover:cursor-pointer"
+                : "bg-[#353535]"
             }`}
           >
-            <img src="/images/pause.png" className="h-6 invert" />
+            <img src="/images/pause.png" className="h-6" />
           </button>
         </div>
         <div className="flex justify-center">
@@ -145,21 +183,21 @@ export default function DualTimer() {
             onClick={snooze}
             className={`pl-5 pr-5 p-1 rounded-l-md ${
               active === "first"
-                ? "bg-white/30 border-l-2 border-white/40 hover:cursor-pointer"
-                : "bg-white/15"
+                ? "bg-[#8BA89E] border-l-2 border-white/40 hover:cursor-pointer"
+                : "bg-[#353535]"
             }`}
           >
-            <img src="/images/snooze.png" className="h-6 invert" />
+            <img src="/images/snooze.png" className="h-6" />
           </button>
           <button
             onClick={lockIn}
             className={`pl-5 pr-5 p-1 rounded-r-md ${
               active === "second"
-                ? "bg-white/30 border-r-2 border-white/40 hover:cursor-pointer"
-                : "bg-white/15"
+                ? "bg-[#8BA89E] border-r-2 border-white/40 hover:cursor-pointer"
+                : "bg-[#353535]"
             }`}
           >
-            <img src="/images/skip.png" className="h-6 invert" />
+            <img src="/images/skip.png" className="h-6" />
           </button>
         </div>
       </div>
