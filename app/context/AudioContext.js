@@ -88,6 +88,10 @@ export function AudioProvider({ children }) {
     if (finalVolume > 0 && !sound.playing()) {
       sound.volume(finalVolume);
       sound.play();
+      if (muted) 
+      {
+        setMuted(false);
+      }
     } else if (finalVolume === 0) {
       sound.stop();
     } else {
