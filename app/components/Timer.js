@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Howl } from "howler";
 import { useAudio } from "../context/AudioContext";
 
@@ -14,6 +14,8 @@ export default function DualTimer() {
     resetTimer,
     setTimerCompleteCallback,
   } = useAudio();
+
+  const alarmSoundRef = useRef(null);
 
   const [firstTimer, setFirstTimer] = useState({
     hours: 0,
@@ -30,8 +32,6 @@ export default function DualTimer() {
   const [editing, setEditing] = useState({ field: null });
   const [inputValue, setInputValue] = useState("");
 
-  const alarmSound = new Howl({ src: ["/sounds/alarm.mp3"], volume: 0.5, html5: true });
-
   const getDurationSeconds = ({ hours, minutes, seconds }) =>
     hours * 3600 + minutes * 60 + seconds;
 
@@ -39,21 +39,35 @@ export default function DualTimer() {
   const displayMinutes = Math.floor(timeRemaining / 60);
   const displaySeconds = timeRemaining % 60;
 
+  // Initialize alarm sound only once
+  useEffect(() => {
+    if (!alarmSoundRef.current) {
+      alarmSoundRef.current = new Howl({
+        src: ["/sounds/alarm.mp3"],
+        volume: 0.2,
+        html5: true,
+      });
+    }
+
+    return () => {
+    };
+  }, []);
+
   // Handle timer completion
   useEffect(() => {
     setTimerCompleteCallback(() => {
-      alarmSound.play();
-      
+      if (alarmSoundRef.current) {
+        alarmSoundRef.current.play();
+      }
+
       // Switch timers
       if (active === "first") {
         setActive("second");
         const duration = getDurationSeconds(secondTimer);
-        // Use startTimer directly with the new duration
         startTimer(duration);
       } else {
         setActive("first");
         const duration = getDurationSeconds(firstTimer);
-        // Use startTimer directly with the new duration
         startTimer(duration);
       }
     });

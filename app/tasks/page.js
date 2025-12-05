@@ -89,6 +89,7 @@ export default function Tasks() {
           </div>
           <div>{taskList(priority, "To do")}</div>
         </div>
+
         <div className="border border-yellow-400 p-3 rounded-md">
           <div>
             {(() => {
@@ -141,9 +142,7 @@ export default function Tasks() {
                       </button>
                     </div>
                   )}
-                  {visible && (
-                    <div>{newTask(priority, "Done", key)}</div>
-                  )}
+                  {visible && <div>{newTask(priority, "Done", key)}</div>}
                 </div>
               );
             })()}
@@ -155,8 +154,8 @@ export default function Tasks() {
   };
 
   return (
-    <main>
-      <div className="flex bg-[#3E3E3E] p-5 m-3 rounded-xl divide-x divide-white/30 gap-5">
+    <main className="flex justify-center">
+      <div className="flex bg-[#3E3E3E] p-5 mt-2 w-7xl rounded-xl divide-x divide-white/30 gap-5">
         <div className="flex-1 p-4">
           <ul>
             <li>Today</li>

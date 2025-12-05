@@ -14,11 +14,12 @@ export default function SoundPlayer({ src, volume = 50, globalVolume = 100 }) {
     soundRef.current = new Howl({
       src: [src],
       loop: true,
-      html5: false,
+      html5: true,
       volume: (volume * globalVolume) / 10000,
     });
 
     soundRef.current.play();
+    
   }, [src]);
 
   useEffect(() => {
