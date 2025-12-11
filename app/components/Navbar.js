@@ -4,14 +4,18 @@ export default function Navbar() {
     <section>
       <div className="flex">
         <div className="top-0 left-0 right-0 p-4 fixed flex justify-around text-center border-b border-[#3E3E3E]">
-          <Link href="/" className="pl-30">
+          
+          <Link href="/home" className="pr-30">
+            Home
+          </Link>
+          <Link href="/mix" className="pl-30">
             Focus
           </Link>
           <Link href="/tasks" className="">
             Tasks
           </Link>
-          <Link href="/login" className="pr-30">
-            Login
+          <Link href="/profile" className="">
+            Profile
           </Link>
         </div>
       </div>
